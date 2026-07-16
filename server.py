@@ -240,7 +240,7 @@ async def handle_root(request: aiohttp.web.Request) -> aiohttp.web.Response:
       const r = await fetch('/api/add', {{ method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{number:num}}) }});
       const data = await r.json();
       if (r.ok) {{
-        div.innerHTML = '<div class="notice ok">✅ Added {num} — new total: <strong>{total}</strong></div>'.replace('{num}',num).replace('{total}',data.value);
+        div.innerHTML = '<div class="notice ok">✅ Added {num} — new total: <strong>{total}</strong></div>'.replace('{{num}}',num).replace('{{total}}',data.value);
       }} else {{
         div.innerHTML = '<div class="notice err">❌ ' + (data.error || data.body?.error || 'Error') + '</div>';
       }}
