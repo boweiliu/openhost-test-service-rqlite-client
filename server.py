@@ -50,7 +50,8 @@ async def _call_service(method: str, path: str, body: dict | list | None = None)
 
     print(f"Calling service: {method} {url}", flush=True)
     try:
-        async with aiohttp.ClientSession() as s:
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as s:
             kwargs: dict = {"headers": headers}
             if body is not None:
                 kwargs["json"] = body
@@ -83,8 +84,7 @@ async def _check_connection() -> bool:
 # ---------------------------------------------------------------------------
 
 async def handle_health(request: aiohttp.web.Request) -> aiohttp.web.Response:
-    conn = await _check_connection()
-    return _json({"status": "ok", "rqlite_service": "reachable" if conn else "unreachable"})
+    return _json({"status": "ok"})
 
 
 async def handle_root(request: aiohttp.web.Request) -> aiohttp.web.Response:
