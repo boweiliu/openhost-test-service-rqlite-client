@@ -88,46 +88,21 @@ async def handle_health(request: aiohttp.web.Request) -> aiohttp.web.Response:
 
 
 async def handle_root(request: aiohttp.web.Request) -> aiohttp.web.Response:
-    """HTML debug dashboard."""
-    conn_up = await _check_connection()
-    conn_color = "#16a34a" if conn_up else "#dc2626"
-    conn_text = "Connected" if conn_up else "Offline"
-    conn_dot = "🟢" if conn_up else "🔴"
+    """HTML debug dashboard. Returns the page shell instantly —
+    the JS auto-refresh loop fetches live data client-side."""
+    # Never make service calls here; wait_for_ready polls / with a 2s timeout.
+    conn_color = "#94a3b8"
+    conn_text = "Loading…"
+    conn_dot = "⚪"
+    last_time = "—"
 
-    # Current accumulator value
-    acc_value = "—"
-    acc_updated = "—"
-    if conn_up:
-        r = await _call_service("GET", "value")
-        if r["status"] == 200 and isinstance(r["body"], dict):
-            acc_value = r["body"].get("value", "—")
-            acc_updated = r["body"].get("last_updated", "—")
-
-    # Entries
-    entries_rows = ""
-    if conn_up:
-        r = await _call_service("GET", "entries")
-        if r["status"] == 200 and isinstance(r["body"], list):
-            for e in r["body"]:
-                entries_rows += f"<tr><td>{e.get('key','')}</td><td>{e.get('value','')}</td><td>{e.get('last_updated','')}</td></tr>"
-
-    # Last request / response
-    last_req_str = json.dumps(_last_request, indent=2) if _last_request else "None"
-    last_resp_str = json.dumps(_last_response, indent=2) if _last_response else "None"
-    last_time = _last_call_time or "—"
-
-    # Permission section
-    perm_rows = ""
-    if _last_response and _last_response.get("status") == 403 and isinstance(_last_response.get("body"), dict):
-        body = _last_response["body"]
-        req_grant = body.get("required_grant", {})
-        grant_body = req_grant.get("grant", "?")
-        grant_scope = req_grant.get("scope", "?")
-        grant_url = req_grant.get("grant_url", body.get("grant_url", ""))
-        perm_rows += (
-            f"<tr><td>{grant_body}</td><td>{grant_scope}</td><td style='color:#dc2626'>denied</td>"
-            f"<td>{f'<a href=\"{grant_url}\">approve</a>' if grant_url else '—'}</td></tr>"
-        )
+    # All placeholders — replaced by JS on first poll
+    acc_value = "…"
+    acc_updated = "…"
+    entries_rows = '<tr><td colspan="3" style="color:#94a3b8">Loading…</td></tr>'
+    perm_rows = '<tr><td colspan="4" style="color:#94a3b8">Manifest declares grants: read, write</td></tr>'
+    last_req_str = "None"
+    last_resp_str = "None"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
