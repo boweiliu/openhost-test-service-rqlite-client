@@ -334,7 +334,7 @@ async def handle_run_query(request: aiohttp.web.Request) -> aiohttp.web.Response
     if is_read:
         result = await _call_service("GET", f"query?q={aiohttp.helpers.quote(sql)}")
     else:
-        result = await _call_service("POST", "execute", [sql])
+        result = await _call_service("POST", "execute", [[sql]])
 
     # rqlite returns: read  → {"results":[{"columns":[...],"values":[[...],...]}]}
     #                write → {"results":[{"last_insert_id":...,"rows_affected":...}]}
