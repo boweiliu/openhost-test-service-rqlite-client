@@ -1,0 +1,25 @@
+[app]
+name = "rqlite-client"
+version = "0.1.0"
+description = "rqlite service consumer — sample app that connects to rqlite through the OpenHost service interface."
+
+[runtime.container]
+image = "Dockerfile"
+port = 8080
+
+[routing]
+health_check = "/health"
+public_paths = ["/", "/health"]
+
+[[services.v2.consumes]]
+service = "github.com/imbue-openhost/openhost/services/rqlite"
+shortname = "rqlite"
+version = ">=0.1.0"
+grants = [
+    "read",
+    "write",
+]
+
+[resources]
+memory_mb = 64
+cpu_cores = 0.1
